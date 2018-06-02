@@ -1,0 +1,64 @@
+admin_pass: pass
+time: 120
+default_team_score: 200
+default_problem_score: 20
+solutions:
+  - 3
+  - 3285
+  - 1343
+  - 14
+  - 2000
+  - 4472
+  - 292
+  - 180
+  - 1764
+  - 4307
+  - 192
+  - 106
+  - 833
+  - 556
+  - 696
+  - 12
+  - 208
+  - 516
+  - 609
+  - 228
+teams:
+  - name: 11G - Joe Cocker Blue Label
+  - name:  9A - Avantul din demisol
+  - name: 11E - Los Pollos Hermanos
+  - name: 10H - Fantastic Five
+  - name:  9E - Zeu
+  - name:  9E - Pitagora
+  - name:  MV - Dendritele
+  - name:  MV - Cubanul
+  - name:  8A - Atena
+  - name: 12A - Penelopa
+  - name:  9C - Teracopa
+  - name: 10G - TEAM KOCH
+  - name:  9F - Olimpia
+  - name:  9F - Vulkan Team
+  - name: 10H - VME
+  - name:  9G - Gamblers 5
+  - name: 11FD - OLI
+  - name:  9D - Dionysos
+  - name:  9D - Magnus
+  - name: 10I - Normandia
+  - name: 10H - Cronicarii
+  - name: 10D - Praduitorii
+  - name: 10C - Marinlenus
+  - name: 10F - Posso
+  - name: 10D - Stellaris
+  - name: 10D - Prestige
+  - name:  SS - 54MOLA!
+  - name:  MV - SKYNET
+  - name:  MV - MATRIX
+  - name:  MV - GENIX
+  - name:   7 - Sapte
+  - name: 12C - Purcelusii
+  - name:  9I - Epsilon
+  - name: 11B - FEDOR
+  - name: 11B - Megatron 3000
+  - name: 12A - Anteprescolarii
+  - name: 11A - MLC
+  - name: 11A - Unu
