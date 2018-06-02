@@ -17,6 +17,7 @@ const (
 	configFile = "config.yaml"
 )
 
+// BasicError sets the status and writes the name of the status as a message
 func BasicError(c *gin.Context, status int) {
 	c.Status(status)
 	c.Writer.Write([]byte(strconv.Itoa(status) + " " + http.StatusText(status)))

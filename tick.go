@@ -2,12 +2,14 @@ package main
 
 import "time"
 
+// MainTicker is the global ticker
 var MainTicker *Ticker
 
 func initTicker() {
 	MainTicker = NewTicker(time.Duration(Conf.Time) * time.Minute)
 }
 
+// Ticker keeps the contest time. It can be paused and resumed
 type Ticker struct {
 	Running  bool
 	Duration time.Duration
@@ -17,6 +19,7 @@ type Ticker struct {
 	stopChan  chan bool
 }
 
+// NewTicker returns a new ticker with a base duration
 func NewTicker(d time.Duration) *Ticker {
 	t := &Ticker{
 		Running:  false,
@@ -30,6 +33,7 @@ func NewTicker(d time.Duration) *Ticker {
 	return t
 }
 
+// Start starts ticking until the time runs out or until the ticker is stopped
 func (t *Ticker) Start() {
 	t.startTime = time.Now()
 	t.Running = true
@@ -51,6 +55,7 @@ func (t *Ticker) Start() {
 	}()
 }
 
+// Stop stops the ticker. If it didn't run out, it can be resumed later.
 func (t *Ticker) Stop() {
 	if !t.Running {
 		return
@@ -58,6 +63,7 @@ func (t *Ticker) Stop() {
 	t.stopChan <- true
 }
 
+// ElapsedSinceStart returns the amount of time elapsed since the ticker was resumed (or first start)
 func (t *Ticker) ElapsedSinceStart() time.Duration {
 	if !t.Running {
 		return 0

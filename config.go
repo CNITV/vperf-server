@@ -7,8 +7,10 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// Conf holds the global configuration
 var Conf *Config
 
+// Config is the format of the config
 type Config struct {
 	AdminPass string `yaml:"admin_pass"`
 	Teams     []struct {

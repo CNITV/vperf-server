@@ -20,6 +20,7 @@ type storeProblem struct {
 	Score int `json:"score"`
 }
 
+// Storage stores the current state of the contest
 type Storage struct {
 	// Time is in seconds
 	Time        int            `json:"time"`
