@@ -17,8 +17,9 @@ type Config struct {
 		Name string `yaml:"name"`
 	} `yaml:"teams"`
 
-	// Time is in minutes
-	Time int `yaml:"time"`
+	// Both in minutes
+	Time      int `yaml:"time"`
+	GraceTime int `yaml:"grace_time"`
 
 	Solutions           []int `yaml:"solutions"`
 	DefaultTeamScore    int   `yaml:"default_team_score"`

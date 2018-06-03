@@ -64,9 +64,19 @@ func (t *Ticker) Stop() {
 }
 
 // ElapsedSinceStart returns the amount of time elapsed since the ticker was resumed (or first start)
-func (t *Ticker) ElapsedSinceStart() time.Duration {
+func (t *Ticker) ElapsedSinceResume() time.Duration {
 	if !t.Running {
 		return 0
 	}
 	return time.Since(t.startTime)
+}
+
+// RemainingTime returns the time left until the end of the contest
+func (t *Ticker) RemainingTime() time.Duration {
+	return time.Duration(Conf.Time)*time.Minute - t.ElapsedTime()
+}
+
+// ElapsedTime returns the elapsed contest time, not counting and break
+func (t *Ticker) ElapsedTime() time.Duration {
+	return MainTicker.Prev + t.ElapsedSinceResume()
 }

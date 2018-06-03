@@ -33,6 +33,12 @@ In body primește un singur întreg, răspunsul la problemă.
 
 Trimite răspunsul la problema `{problem_no}` din partea echipei `{id}`.
 
+### POST `/admin/team/{id}/fine`
+
+In body primește un singur întreg, numărul de puncte pentru sancțiune.
+
+Sancționează echipa `{id}` cu un număr de puncte.
+
 ### DELETE `/admin/team/{id}?forget=bool`
 
 Descalifică ireversibil echipa din concurs. Daca parametrul `forget` este setat
