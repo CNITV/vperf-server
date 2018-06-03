@@ -30,6 +30,12 @@ func main() {
 	r := gin.New()
 	r.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, false))
 	r.Use(cors.Default())
+	r.Use(func(c *gin.Context) {
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.Header("Pragma", "no-cache")
+		c.Header("Expires", "0")
+		c.Next()
+	})
 
 	r.GET("/ok", func(c *gin.Context) {
 		c.String(http.StatusOK, "ok")

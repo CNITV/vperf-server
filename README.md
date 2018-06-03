@@ -53,7 +53,7 @@ Returnează jurnalul evenimentelor.
 Șterge intrarea `{id}` din jurnal și recalculează scorurile.
 
 
-### POST `/status`
+### GET `/status`
 
 Returnează starea concursului.
 
