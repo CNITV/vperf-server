@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -63,7 +62,6 @@ func main() {
 
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
-	r.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, false))
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	corsConfig.AddAllowHeaders("authorization")
@@ -244,5 +242,6 @@ func main() {
 		reset(true)
 	})
 
+	logrus.Info("Listening to :1031")
 	r.Run(":1031")
 }

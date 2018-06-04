@@ -64,6 +64,8 @@ const (
 	EventFineTeam LogEvent = "FINE_TEAM"
 	// EventDisqualifyTeam has one param: team_id
 	EventDisqualifyTeam LogEvent = "DISQUALIFY_TEAM"
+	// EventStop marks the pause or stop of the contest. No params.
+	EventStop LogEvent = "STOP"
 )
 
 // LogEntry has the complete details of an event that happens during the contest
@@ -75,6 +77,13 @@ type LogEntry struct {
 
 // Save saves the events in a JSON file
 func (el *EventLog) Save() {
+	for ei, e := range el.Entries {
+		if e.Event == EventStop {
+			el.Delete(ei)
+			break
+		}
+	}
+	el.Push(EventStop, map[string]int{})
 	j, err := json.MarshalIndent(el.Entries, "", "  ")
 	if err != nil {
 		logrus.Panic(err)
@@ -105,6 +114,8 @@ func (el *EventLog) Process() {
 			fineTeam(e.Params["team_id"], e.Params["points"])
 		case EventDisqualifyTeam:
 			disqualifyTeam(e.Params["team_id"])
+		case EventStop:
+			MainTicker.RecalculateProblemScore()
 		}
 	}
 	MainTicker.RecalculateProblemScore()
