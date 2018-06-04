@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -15,7 +17,26 @@ import (
 
 const (
 	configFile = "config.yaml"
+	logFile    = "log.json"
 )
+
+func bailOut() {
+	go func() {
+		logrus.Warn("Stopping in one second")
+		time.Sleep(time.Second)
+		Log.Save()
+		os.Exit(0)
+	}()
+}
+
+func handleSigint() {
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		bailOut()
+	}()
+}
 
 func main() {
 	if len(os.Getenv("DEBUG")) > 0 {
@@ -25,6 +46,8 @@ func main() {
 	loadConfig(configFile)
 	initStorage(Conf)
 	initTicker()
+	initLog(logFile)
+	handleSigint()
 
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
@@ -60,10 +83,15 @@ func main() {
 	}))
 	tAdmin := admin.Group("/", func(c *gin.Context) {
 		if !MainTicker.Running {
-			c.AbortWithStatus(http.StatusServiceUnavailable)
+			BasicError(c, http.StatusServiceUnavailable)
+			c.Abort()
 			return
 		}
 		c.Next()
+	})
+
+	admin.GET("/ok", func(c *gin.Context) {
+		c.String(http.StatusOK, "ok")
 	})
 
 	admin.POST("/start", func(c *gin.Context) {
@@ -71,15 +99,10 @@ func main() {
 		logrus.Info("Contest started")
 	})
 
-	admin.POST("/pause", func(c *gin.Context) {
-		Store.PauseReason = c.Query("reason")
-		MainTicker.Stop()
-		logrus.WithField("reason", Store.PauseReason).Info("Contest paused")
-	})
-
 	admin.POST("/stop", func(c *gin.Context) {
 		MainTicker.Stop()
 		logrus.Info("Contest stopped")
+		bailOut()
 	})
 
 	tAdmin.PUT("/team/:id/special", func(c *gin.Context) {
@@ -103,10 +126,11 @@ func main() {
 				"team": i,
 				"task": p,
 			}).Info("Ignored special task set request. Time's out")
-			c.Status(http.StatusServiceUnavailable)
+			BasicError(c, http.StatusServiceUnavailable)
 			return
 		}
-		Store.Teams[i].Special = p
+		setSpecial(i, p)
+		Log.Push(EventSetSpecial, map[string]int{"team_id": i, "task_id": p})
 	})
 
 	tAdmin.POST("/team/:id/submit/:problem_no", func(c *gin.Context) {
@@ -130,56 +154,16 @@ func main() {
 				"team": i,
 				"task": p,
 			}).Info("Ignored submit answer request. Not the time.")
-			c.Status(http.StatusServiceUnavailable)
+			BasicError(c, http.StatusServiceUnavailable)
 			return
 		}
 		ans, err := BodyAsNumber(c)
-		logrus.Debug(ans, err)
 		if err != nil {
 			BasicError(c, http.StatusBadRequest)
 			return
 		}
-		if Store.Teams[i].Trials[p].Passed {
-			logrus.WithFields(logrus.Fields{
-				"team": i,
-				"task": p,
-			}).Info("Ignored answer because team already completed task")
-			return
-		}
-		delta := 0
-		log := logrus.WithFields(logrus.Fields{
-			"team":   i,
-			"task":   p,
-			"answer": ans,
-		})
-		if Conf.Solutions[p] != ans {
-			// incorrect answer, remove 10 points
-			delta -= 10
-			Store.Teams[i].Trials[p].Passed = false
-			Store.Problems[p].Score += 2
-			log.Info("Team supplied wrong answer")
-		} else {
-			// correct answer, give points
-			log.Infof("Team supplied good answer. Awarding %d points", Store.Problems[p].Score)
-			delta += Store.Problems[p].Score
-			// give bonus
-			log.Infof("Team is #%d in solving this task", Store.passed[p]+1)
-			if Store.passed[p] < len(passBonus) {
-				log.Infof("Awarding %d bonus points", passBonus[Store.passed[p]])
-				delta += passBonus[Store.passed[p]]
-			}
-			Store.passed[p]++
-			Store.Teams[i].Trials[p].Passed = true
-		}
-		// if the problem is marked as special the reward is doubled
-		if p == Store.Teams[i].Special {
-			log.Infof("Problem was marked as special. The award is doubled")
-			delta *= 2
-			Store.Teams[i].SpecialScore += delta
-		}
-		log.Infof("Final score is %d", delta)
-		Store.Teams[i].Score += delta
-		Store.Teams[i].Trials[p].No++
+		submitAnswer(i, p, ans)
+		Log.Push(EventSubmitAnswer, map[string]int{"team_id": i, "task_id": p, "answer": ans})
 	})
 
 	tAdmin.POST("/team/:id/fine", func(c *gin.Context) {
@@ -197,7 +181,8 @@ func main() {
 			BasicError(c, http.StatusBadRequest)
 			return
 		}
-		Store.Teams[i].Score -= s
+		fineTeam(i, s)
+		Log.Push(EventFineTeam, map[string]int{"team_id": i, "points": s})
 	})
 
 	r.Run(":1031")

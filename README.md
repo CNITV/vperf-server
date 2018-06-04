@@ -11,11 +11,6 @@ Toate căile care încep cu `/admin` necesită autentificare.
 
 Pornește concursul.
 
-### POST `/admin/pause?reason=string`
-
-Suspendă concursul. Parametrul `reason` conține motivul suspendării și este
-opțional.
-
 ### POST `/admin/stop`
 
 Termină concursul.
@@ -52,8 +47,14 @@ Returnează jurnalul evenimentelor.
 
 Șterge intrarea `{id}` din jurnal și recalculează scorurile.
 
+### GET `/admin/ok`
+
+Returnează ok.
 
 ### GET `/status`
 
 Returnează starea concursului.
 
+### GET `/ok`
+
+Returnează `ok`.

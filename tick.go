@@ -1,6 +1,12 @@
 package main
 
-import "time"
+import (
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/sirupsen/logrus"
+)
 
 // MainTicker is the global ticker
 var MainTicker *Ticker
@@ -11,9 +17,10 @@ func initTicker() {
 
 // Ticker keeps the contest time. It can be paused and resumed
 type Ticker struct {
-	Running  bool
-	Duration time.Duration
-	Prev     time.Duration
+	Running    bool
+	Duration   time.Duration
+	Prev       time.Duration
+	LastMinute int
 
 	startTime time.Time
 	stopChan  chan bool
@@ -38,21 +45,13 @@ func (t *Ticker) Start() {
 	t.startTime = time.Now()
 	t.Running = true
 	go func() {
-		min := int(t.ElapsedTime().Minutes())
+		t.LastMinute = int(t.ElapsedTime().Minutes())
 	F:
 		for {
 			if time.Since(t.startTime) >= t.Duration {
 				break
 			}
-			if t.RemainingTime().Minutes() >= 20 && int(t.ElapsedTime().Minutes()) > min {
-				for i, p := range Store.passed {
-					// if the task is still unsolved
-					if p == 0 {
-						Store.Problems[i].Score++
-					}
-				}
-				min = int(t.ElapsedTime().Minutes())
-			}
+			t.RecalculateProblemScore()
 			select {
 			case <-time.After(time.Second):
 			case <-t.stopChan:
@@ -89,4 +88,22 @@ func (t *Ticker) RemainingTime() time.Duration {
 // ElapsedTime returns the elapsed contest time, not counting and break
 func (t *Ticker) ElapsedTime() time.Duration {
 	return MainTicker.Prev + t.ElapsedSinceResume()
+}
+
+func (t *Ticker) RecalculateProblemScore() {
+	min := int(t.ElapsedTime().Minutes())
+	if t.RemainingTime().Minutes() >= 20 && min > t.LastMinute {
+		log := logrus.WithField("minutes", min)
+		log.Infof("%d minute passed. Going to increase problem scores", min-t.LastMinute)
+		inc := []string{}
+		for i, p := range Store.passed {
+			// if the task is still unsolved
+			if p == 0 {
+				Store.Problems[i].Score += min - t.LastMinute
+				inc = append(inc, strconv.Itoa(i))
+			}
+		}
+		log.Infof("Tasks %s had their scores increased", strings.Join(inc, ", "))
+		t.LastMinute = int(t.ElapsedTime().Minutes())
+	}
 }

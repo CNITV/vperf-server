@@ -9,6 +9,8 @@ type storeTeam struct {
 	Special      int          `json:"special"`
 	SpecialScore int          `json:"special_score"`
 	Trials       []storeTrial `json:"trials"`
+
+	setSpecial bool
 }
 
 type storeTrial struct {
@@ -24,12 +26,11 @@ type storeProblem struct {
 // Storage stores the current state of the contest
 type Storage struct {
 	// Time is in seconds
-	Time        int            `json:"time"`
-	TotalTime   int            `json:"total_time"`
-	Running     bool           `json:"running"`
-	PauseReason string         `json:"pause_reason"`
-	Teams       []storeTeam    `json:"teams"`
-	Problems    []storeProblem `json:"problems"`
+	Time      int            `json:"time"`
+	TotalTime int            `json:"total_time"`
+	Running   bool           `json:"running"`
+	Teams     []storeTeam    `json:"teams"`
+	Problems  []storeProblem `json:"problems"`
 
 	passed []int
 }
@@ -51,6 +52,7 @@ func initStorage(c *Config) {
 			Special:      0,
 			SpecialScore: 0,
 			Trials:       []storeTrial{},
+			setSpecial:   false,
 		}
 		for i := 0; i < len(c.Solutions); i++ {
 			team.Trials = append(team.Trials, storeTrial{No: 0, Passed: false})
