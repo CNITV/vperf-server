@@ -156,6 +156,7 @@ func main() {
 			// incorrect answer, remove 10 points
 			delta -= 10
 			Store.Teams[i].Trials[p].Passed = false
+			Store.Problems[p].Score += 2
 			log.Info("Team supplied wrong answer")
 		} else {
 			// correct answer, give points

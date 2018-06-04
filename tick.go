@@ -38,10 +38,20 @@ func (t *Ticker) Start() {
 	t.startTime = time.Now()
 	t.Running = true
 	go func() {
+		min := int(t.ElapsedTime().Minutes())
 	F:
 		for {
 			if time.Since(t.startTime) >= t.Duration {
 				break
+			}
+			if t.RemainingTime().Minutes() >= 20 && int(t.ElapsedTime().Minutes()) > min {
+				for i, p := range Store.passed {
+					// if the task is still unsolved
+					if p == 0 {
+						Store.Problems[i].Score++
+					}
+				}
+				min = int(t.ElapsedTime().Minutes())
 			}
 			select {
 			case <-time.After(time.Second):
