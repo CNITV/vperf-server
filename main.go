@@ -38,15 +38,27 @@ func handleSigint() {
 	}()
 }
 
+func startContest() {
+	MainTicker.Start()
+	logrus.Info("Contest started")
+}
+
+func reset(start bool) {
+	initStorage(Conf)
+	initTicker()
+	initLog(logFile)
+	if start {
+		startContest()
+	}
+}
+
 func main() {
 	if len(os.Getenv("DEBUG")) > 0 {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
 	loadConfig(configFile)
-	initStorage(Conf)
-	initTicker()
-	initLog(logFile)
+	reset(false)
 	handleSigint()
 
 	gin.SetMode(gin.ReleaseMode)
@@ -98,8 +110,7 @@ func main() {
 	})
 
 	admin.POST("/start", func(c *gin.Context) {
-		MainTicker.Start()
-		logrus.Info("Contest started")
+		startContest()
 	})
 
 	admin.POST("/stop", func(c *gin.Context) {
@@ -186,6 +197,51 @@ func main() {
 		}
 		fineTeam(i, s)
 		Log.Push(EventFineTeam, map[string]int{"team_id": i, "points": s})
+	})
+
+	admin.DELETE("/team/:id", func(c *gin.Context) {
+		i, err := strconv.Atoi(c.Param("id"))
+		if err != nil || i < 0 || i >= len(Store.Teams) {
+			BasicError(c, http.StatusBadRequest)
+			return
+		}
+		rawForget := c.Query("forget")
+		forget, err := strconv.ParseBool(rawForget)
+		if err != nil {
+			BasicError(c, http.StatusBadRequest)
+			return
+		}
+
+		disqualifyTeam(i)
+		Log.Push(EventDisqualifyTeam, map[string]int{"team_id": i})
+
+		if forget {
+			toDelete := []int{}
+			for ei, e := range Log.Entries {
+				val, ok := e.Params["team_id"]
+				if ok && val == i && e.Event != EventDisqualifyTeam {
+					toDelete = append(toDelete, ei)
+				}
+			}
+			Log.Delete(toDelete...)
+			Log.Save()
+			reset(true)
+		}
+	})
+
+	admin.GET("/log", func(c *gin.Context) {
+		c.JSON(http.StatusOK, Log.Entries)
+	})
+
+	admin.DELETE("/log/:id", func(c *gin.Context) {
+		i, err := strconv.Atoi(c.Param("id"))
+		if err != nil || i < 0 || i >= len(Log.Entries) {
+			BasicError(c, http.StatusBadRequest)
+			return
+		}
+		Log.Delete(i)
+		Log.Save()
+		reset(true)
 	})
 
 	r.Run(":1031")

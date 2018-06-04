@@ -68,3 +68,8 @@ func fineTeam(i, s int) {
 	}).Info("Team was fined")
 	Store.Teams[i].Score -= s
 }
+
+func disqualifyTeam(i int) {
+	logrus.WithField("team", i).Info("Team was disqualified")
+	Store.Teams[i].Disqualified = true
+}

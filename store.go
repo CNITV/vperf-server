@@ -9,6 +9,7 @@ type storeTeam struct {
 	Special      int          `json:"special"`
 	SpecialScore int          `json:"special_score"`
 	Trials       []storeTrial `json:"trials"`
+	Disqualified bool         `json:"disqualified"`
 
 	setSpecial bool
 }
@@ -52,6 +53,7 @@ func initStorage(c *Config) {
 			Special:      0,
 			SpecialScore: 0,
 			Trials:       []storeTrial{},
+			Disqualified: false,
 			setSpecial:   false,
 		}
 		for i := 0; i < len(c.Solutions); i++ {
