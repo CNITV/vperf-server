@@ -77,6 +77,7 @@ type LogEntry struct {
 
 // Save saves the events in a JSON file
 func (el *EventLog) Save() {
+	logrus.Info("Saving log")
 	for ei, e := range el.Entries {
 		if e.Event == EventStop {
 			el.Delete(ei)
@@ -123,7 +124,6 @@ func (el *EventLog) Process() {
 
 func (el *EventLog) Push(ev LogEvent, params map[string]int) {
 	el.m.Lock()
-	defer el.m.Unlock()
 
 	el.Entries = append(el.Entries, LogEntry{
 		Event:          ev,
@@ -131,6 +131,10 @@ func (el *EventLog) Push(ev LogEvent, params map[string]int) {
 		TimeSinceStart: Duration{Duration: MainTicker.ElapsedTime()},
 	})
 	logrus.Debug(el.Entries)
+	el.m.Unlock()
+	if ev != EventStop {
+		el.Save()
+	}
 }
 
 // Delete deletes an entry
@@ -175,5 +179,4 @@ func initLog(path string) {
 		log.WithError(err).Fatal("Couldn't decode log file")
 	}
 	Log.Process()
-	logrus.Warn("You need to start the contest now")
 }

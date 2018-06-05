@@ -48,7 +48,7 @@ func (t *Ticker) Start() {
 		t.LastMinute = int(t.ElapsedTime().Minutes())
 	F:
 		for {
-			if time.Since(t.startTime) >= t.Duration {
+			if t.RemainingTime() <= 0 {
 				break
 			}
 			t.RecalculateProblemScore()
@@ -61,6 +61,7 @@ func (t *Ticker) Start() {
 		t.Running = false
 		t.Duration -= time.Since(t.startTime)
 		t.Prev += time.Since(t.startTime)
+		logrus.Info("Contest stopped")
 	}()
 }
 
@@ -92,9 +93,16 @@ func (t *Ticker) ElapsedTime() time.Duration {
 
 func (t *Ticker) RecalculateProblemScore() {
 	min := int(t.ElapsedTime().Minutes())
-	if t.RemainingTime().Minutes() >= 20 && min > t.LastMinute {
+	if min > t.LastMinute {
+		delta := min - t.LastMinute
+		if t.RemainingTime().Minutes() < 20 {
+			delta -= 20 - int(t.RemainingTime().Minutes())
+		}
+		if delta <= 0 {
+			return
+		}
 		log := logrus.WithField("minutes", min)
-		log.Infof("%d minute passed. Going to increase problem scores", min-t.LastMinute)
+		log.Infof("%d minutes passed. Going to increase problem scores", min-t.LastMinute)
 		inc := []string{}
 		for i, p := range Store.passed {
 			// if the task is still unsolved

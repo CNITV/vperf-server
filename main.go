@@ -48,6 +48,8 @@ func reset(start bool) {
 	initLog(logFile)
 	if start {
 		startContest()
+	} else {
+		logrus.Warn("You need to start the contest now")
 	}
 }
 
