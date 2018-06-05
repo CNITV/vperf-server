@@ -163,14 +163,6 @@ func main() {
 			return
 		}
 
-		if MainTicker.ElapsedTime().Minutes() < float64(Conf.GraceTime) {
-			logrus.WithFields(logrus.Fields{
-				"team": i,
-				"task": p,
-			}).Info("Ignored submit answer request. Not the time.")
-			BasicError(c, http.StatusServiceUnavailable)
-			return
-		}
 		ans, err := BodyAsNumber(c)
 		if err != nil {
 			BasicError(c, http.StatusBadRequest)

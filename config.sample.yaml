@@ -1,5 +1,6 @@
 admin_pass: pass
 time: 120
+grace_time: 10
 default_team_score: 200
 default_problem_score: 20
 solutions:

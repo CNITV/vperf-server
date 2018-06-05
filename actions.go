@@ -51,7 +51,7 @@ func submitAnswer(i, p, ans int) {
 		Store.Teams[i].Trials[p].Passed = true
 	}
 	// if the problem is marked as special the reward is doubled
-	if p == Store.Teams[i].Special {
+	if p == Store.Teams[i].Special && !(p == Store.Teams[i].Special && MainTicker.ElapsedTime().Minutes() <= 10 && !Store.Teams[i].setSpecial) {
 		log.Infof("Problem was marked as special. The award is doubled")
 		delta *= 2
 		Store.Teams[i].SpecialScore += delta
