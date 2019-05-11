@@ -49,6 +49,22 @@ func submitAnswer(i, p, ans int) {
 		}
 		Store.passed[p]++
 		Store.Teams[i].Trials[p].Passed = true
+
+		unsolved := false
+		for _, t := range Store.Teams[i].Trials {
+			if !t.Passed {
+				unsolved = true
+				break
+			}
+		}
+		if !unsolved {
+			log.Infof("Team is #%d in solving all tasks", Store.finished+1)
+			if Store.finished < len(finishBonus) {
+				log.Infof("Awarding %d bonus points", finishBonus[Store.finished])
+				delta += finishBonus[Store.finished]
+			}
+			Store.finished++
+		}
 	}
 	// if the problem is marked as special the reward is doubled
 	if p == Store.Teams[i].Special && !(p == Store.Teams[i].Special && MainTicker.ElapsedTime().Minutes() <= 10 && !Store.Teams[i].setSpecial) {

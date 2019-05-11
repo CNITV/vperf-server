@@ -12,6 +12,7 @@ type storeTeam struct {
 	Disqualified bool         `json:"disqualified"`
 
 	setSpecial bool
+	finished   bool
 }
 
 type storeTrial struct {
@@ -33,7 +34,8 @@ type Storage struct {
 	Teams     []storeTeam    `json:"teams"`
 	Problems  []storeProblem `json:"problems"`
 
-	passed []int
+	passed   []int
+	finished int
 }
 
 func initStorage(c *Config) {
@@ -43,6 +45,7 @@ func initStorage(c *Config) {
 		Teams:     []storeTeam{},
 		Problems:  []storeProblem{},
 		passed:    make([]int, len(Conf.Solutions)),
+		finished:  0,
 	}
 
 	for i, t := range c.Teams {
@@ -55,6 +58,7 @@ func initStorage(c *Config) {
 			Trials:       []storeTrial{},
 			Disqualified: false,
 			setSpecial:   false,
+			finished:     false,
 		}
 		for i := 0; i < len(c.Solutions); i++ {
 			team.Trials = append(team.Trials, storeTrial{No: 0, Passed: false})
